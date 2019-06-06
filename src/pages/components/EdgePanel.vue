@@ -92,6 +92,7 @@ export default {
   }
   .edge-color {
     border-radius: 4px;
+    width: 20px;
   }
   .style-select-box {
     display: flex;

@@ -160,11 +160,11 @@
       true);
     titleVertex.setConnectable(false);
 
-    const normalTypeVertex = graph.insertVertex(nodeRootVertex, null, null,
-      0, -0.2, 30, 20,
-      `normalType;constituent=1;fillColor=none;image=/static/images/normal-type/forest.png`,
-      true);
-    normalTypeVertex.setConnectable(false);
+    // const normalTypeVertex = graph.insertVertex(nodeRootVertex, null, null,
+    //   0, -0.2, 30, 20,
+    //   `normalType;constituent=1;fillColor=none;image=/static/images/normal-type/forest.png`,
+    //   true);
+    // normalTypeVertex.setConnectable(false);
 
     const cells = graph.importCells([nodeRootVertex], x, y, target);
     if (cells != null && cells.length > 0) {
@@ -193,10 +193,10 @@
 
     Array.from(sourceEles).forEach((ele) => {
       //创建一个图片标签
-      const dragElt = document.createElement('img');
+      const dragElt = document.createElement('div');
       //给表情赋予属性
-      dragElt.setAttribute('src', ele.getAttribute('src'));
-      dragElt.setAttribute('style', 'width:120px;height:120px;');
+      // dragElt.setAttribute('src', ele.getAttribute('src'));
+      dragElt.setAttribute('style', 'width:120px;height:120px;background-color: #e5e5e5;');
 
       mxUtils.makeDraggable(ele, dropValidate, dropSuccessCb, dragElt,
         null, null, null, true);
@@ -480,6 +480,7 @@
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
+        cursor: pointer;
 
         .element {
           width: 100px;
