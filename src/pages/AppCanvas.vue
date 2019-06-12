@@ -3,11 +3,11 @@
     class="app-canvas">
 
     <ElAside
-      class="app-canvas__right"
+      class="app-canvas__left"
       width="234px">
       <Panel
         class="element-panel"
-        title="元素">
+        title="元模型">
         <section>
           <ul
             class="elements">
@@ -19,20 +19,15 @@
                 v-bind="element"
                 class="element-img"
                 :src="`/static/images/ele/${element.icon}`"
-                :alt="element.title">
-                <p>{{ element.title }}</p>
+                :alt="element.name">
+                <p>{{ element.name }}</p>
               </div>
 
             </li>
           </ul>
         </section>
       </Panel>
-      <EdgePanel
-        v-if="!_.isEmpty(this.selectEdgeStyle)"
-        :width="selectEdgeStyle.strokeWidth"
-        :dashed="selectEdgeStyle.dashed"
-        :color="selectEdgeStyle.strokeColor"
-        :handle-style-change="ChangeEdgeStyle"/>
+
     </ElAside>
     <ElMain
       class="app-canvas__main">
@@ -76,38 +71,69 @@
         </ElButton>
       </div>
       <div id="graphContainer">
-        <ElSelect
-          v-if="normalTypeSelectVisible"
-          class="normal-type-select"
-          :style="{
-          top:normalTypePosition.top,
-          left:normalTypePosition.left
-          }"
-          :value="selectVertex.data.normalType"
-          @input="changeNormalType">
-          <ElOption
-            v-for="item in normalTypeOptions"
-            :key="item.label"
-            :label="item.label"
-            :value="item.icon">
-            <div
-              class="normal-type-item">
-              <img
-                :src="`/static/images/normal-type/${item.icon}`"
-                :alt="item.icon">
-              <span
-                class="ml8">{{ item.label }}</span>
-            </div>
-          </ElOption>
-        </ElSelect>
+        <!--        <ElSelect-->
+        <!--          v-if="normalTypeSelectVisible"-->
+        <!--          class="normal-type-select"-->
+        <!--          :style="{-->
+        <!--          top:normalTypePosition.top,-->
+        <!--          left:normalTypePosition.left-->
+        <!--          }"-->
+        <!--          :value="selectVertex.data.normalType"-->
+        <!--          @input="changeNormalType">-->
+        <!--          <ElOption-->
+        <!--            v-for="item in normalTypeOptions"-->
+        <!--            :key="item.label"-->
+        <!--            :label="item.label"-->
+        <!--            :value="item.icon">-->
+        <!--            <div-->
+        <!--              class="normal-type-item">-->
+        <!--              <img-->
+        <!--                :src="`/static/images/normal-type/${item.icon}`"-->
+        <!--                :alt="item.icon">-->
+        <!--              <span-->
+        <!--                class="ml8">{{ item.label }}</span>-->
+        <!--            </div>-->
+        <!--          </ElOption>-->
+        <!--        </ElSelect>-->
       </div>
     </ElMain>
+    <el-aside class="app-canvas__right"
+              width="234px">
+      <EdgePanel
+        v-if="!_.isEmpty(this.selectEdgeStyle)"
+        :width="selectEdgeStyle.strokeWidth"
+        :dashed="selectEdgeStyle.dashed"
+        :color="selectEdgeStyle.strokeColor"
+        :handleStyleChange="changeEdgeStyle"/>
+      <MetamodelPanel
+        v-if="!_.isEmpty(this.selectVertexStyle)&&selectVertex.levelType==0"
+        :selectData='selectVertex.data'
+        :levelType='selectVertex.levelType'
+        :selectChildren="selectVertex.children"
+        :vertex-style='selectVertexStyle'
+        :dashed="selectVertexStyle.dashed"
+        :handleStyleChange="changeVertexStyle"
+        :editChildrenContent="editChildrenContent"
+        ref="MetamodelPanelRef"
+      />
+      <ChildMetamodelPanel
+        v-if="!_.isEmpty(this.selectVertexStyle)&&selectVertex.levelType==1"
+        :selectData='selectVertex.data'
+        :levelType='selectVertex.levelType'
+        :vertex-style='selectVertexStyle'
+        :dashed="selectVertexStyle.dashed"
+        :handleStyleChange="changeVertexStyle"
+        :editChildrenContent="editChildrenContent"
+        ref="MetamodelPanelRef"
+      />
+    </el-aside>
     <div
       class="outline-wrapper">
       <h4>导航器</h4>
       <div
         id="graphOutline"/>
     </div>
+
   </ElContainer>
 </template>
 
@@ -117,6 +143,8 @@
   import mxgraph from '../graph/index';
   import {genGraph, destroyGraph, Graph} from '../graph/Graph';
   import EdgePanel from './components/EdgePanel';
+  import MetamodelPanel from './components/MetamodelPanel';
+  import ChildMetamodelPanel from './components/ChildMetamodelPanel';
   import {elements, normalTypeOptions} from '../common/data';
 
   const {
@@ -139,39 +167,57 @@
   let idSeed = 0;
 
   const insertVertex = (dom, target, x, y) => {
-    const src = dom.getAttribute('src');
-    const id = Number(dom.getAttribute('id'));
-    let geometry = new mxGeometry(20, 20, 100, 135)
-    const nodeRootVertex = new mxCell(null, geometry, '');
+    // const src = dom.getAttribute('src');
+    const id_adm_ci_type = Number(dom.getAttribute('id_adm_ci_type'));
+    let newGeometry = new mxGeometry(20, 20, 100, 135)
+    const title = dom.getAttribute('alt');
+
+    const nodeRootVertex = new mxCell(title, newGeometry, 'verticalAlign=top;overflow=fill;fontSize=12;fontFamily=Helvetica;strokeWidth=1;html=1;');
     // const nodeRootVertex = new mxCell(null, new mxGeometry(0, 0, 100, 135), `node;image=${src}`);
     nodeRootVertex.vertex = true;
+
     // 自定义的业务数据放在 data 属性
     idSeed++;
+    // levelType 等级类型 0 父级 1 子级 -1图标
+
+    nodeRootVertex.levelType = 0
     nodeRootVertex.data = {
       id: idSeed,
-      element: elements.find((element) => element.id === id),
+      element: elements.find((element) => element.id_adm_ci_type === id_adm_ci_type),
       normalType: '',
     };
-
-    const title = dom.getAttribute('alt');
-    const titleVertex = graph.insertVertex(nodeRootVertex, null, title,
-      0, 0, 100, 20,
-      'constituent=1;whiteSpace=wrap;fillColor=none;fontColor=#e6a23c',
+    const itemVertex = graph.insertVertex(nodeRootVertex, null, null,
+      0, 0, 20, 20,
+      'normalType;constituent=1;fillColor=none;image=/static/images/normal-type/add.png',
       true);
-    titleVertex.setConnectable(false);
+    itemVertex.levelType = -1
 
-    // const normalTypeVertex = graph.insertVertex(nodeRootVertex, null, null,
-    //   0, -0.2, 30, 20,
-    //   `normalType;constituent=1;fillColor=none;image=/static/images/normal-type/forest.png`,
-    //   true);
-    // normalTypeVertex.setConnectable(false);
-
-    const cells = graph.importCells([nodeRootVertex], x, y, target);
-    if (cells != null && cells.length > 0) {
-      graph.setSelectionCells(cells);
-    }
+    itemVertex.setConnectable(false);
+    const child = nodeRootVertex.data.element.child
+    insertChild(child, 0, nodeRootVertex, () => {
+      const cells = graph.importCells([nodeRootVertex], x, y, target);
+      if (cells != null && cells.length > 0) {
+        graph.setSelectionCells(cells);
+      }
+    })
   };
 
+  const insertChild = (child, index, nodeRootVertex, cb) => {
+    if (index < child.length) {
+      const itemVertex = graph.insertVertex(nodeRootVertex, null, child[index].name,
+        0, 0.15 + 0.15 * index, 100, 20,
+        'text;strokeColor=none;fontSize=12;fillColor=none;align=left;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;',
+        true);
+      itemVertex.setConnectable(false);
+      itemVertex.levelType = 1
+      itemVertex.data = child[index]
+      index++
+      insertChild(child, index, nodeRootVertex, cb)
+    } else {
+
+      cb()
+    }
+  }
   const makeDraggable = (sourceEles) => {
     const dropValidate = function (evt) {
       const x = mxEvent.getClientX(evt);
@@ -210,6 +256,7 @@
         return;
       }
 
+      //给小图标添加事件
       const clickNormalType = cell.style.includes('normalType');
       if (clickNormalType) {
         // 使用 mxGraph 事件中心，触发自定义事件
@@ -249,6 +296,7 @@
 
   const initGraph = () => {
     graph = genGraph(document.getElementById('graphContainer'));
+    graph.setHtmlLabels(true);
     outline = new mxOutline(graph, document.getElementById('graphOutline'));
     // 将外元素拖拽进画布参考这个例子
     // https://github.com/jinzhanye/mxgraph-demos/blob/master/src/07.drag.html
@@ -279,12 +327,20 @@
     components: {
       Panel,
       EdgePanel,
+      MetamodelPanel,
+      ChildMetamodelPanel
     },
 
     computed: {
       selectEdgeStyle() {
         if (!_.isEmpty(this.selectEdge)) {
           return graph.getCellStyle(this.selectEdge);
+        }
+        return {};
+      },
+      selectVertexStyle() {
+        if (!_.isEmpty(this.selectVertex)) {
+          return graph.getCellStyle(this.selectVertex);
         }
         return {};
       }
@@ -338,9 +394,17 @@
         }
       },
       //
-      ChangeEdgeStyle(key, value) {
+      changeEdgeStyle(key, value) {
         //更改边缘样式
         graph.setStyle(this.selectEdge, key, value);
+      },
+      changeVertexStyle(key, value) {
+        //更改边缘样式
+        graph.setStyle(this.selectVertex, key, value);
+      },
+      editChildrenContent(index, value) {
+        //点击子属性名字执行的方法
+        this.$message.info(index + ':' + value.data.name);
       },
       //************
       // NormalType
@@ -348,7 +412,6 @@
       changeNormalType(val) {
         //更改普通类型
         this.hideTypeSelect();
-
         this.selectVertex.data.normalType = val;
         const normalTypeVertex = this.selectVertex.children[1];
         graph.setStyle(normalTypeVertex, 'image', `/static/images/normal-type/${val}`);
@@ -361,15 +424,30 @@
       },
       showNormalTypeSelect(sender, evt) {
         //显示正常类型选择
-        const normalTypeDom = graph.getDom(evt.getProperty('cell'));
-        const {left, top} = normalTypeDom.getBoundingClientRect();
-        this.normalTypePosition.left = `${left - 210}px`;
-        this.normalTypePosition.top = `${top - 8}px`;
-        this.normalTypeSelectVisible = true;
+        // const normalTypeDom = graph.getDom(evt.getProperty('cell'));
+        // const {left, top} = normalTypeDom.getBoundingClientRect();
+        // this.normalTypePosition.left = `${left + 80}px`;
+        // this.normalTypePosition.top = `${top + 20}px`;
+        // this.normalTypeSelectVisible = true;
+        let index = this.selectVertex.children.length - 1
+        const itemVertex = graph.insertVertex(this.selectVertex, null, elements[0].child[0].name,
+          0, 0.15 + 0.15 * index, 100, 20,
+          'text;strokeColor=none;fontSize=12;fillColor=none;align=left;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;',
+          true);
+        itemVertex.setConnectable(false);
+        itemVertex.levelType = 1
+        itemVertex.data = elements[0].child[0]
+        const addVertex = this.selectVertex.children[0];
+        let geometry = addVertex.geometry;
+        geometry.y += 0.15;
+        setTimeout(()=>{
+          addVertex.setGeometry(geometry)
+        },1000)
       },
 
       handleSelectionChange(selectModel) {
         //处理选择更改
+
         this.selectVertex = {};
         this.selectEdge = {};
         if (!selectModel.cells.length) {
@@ -378,17 +456,15 @@
 
         const cell = selectModel.cells[0];
 
-        // 另一种获取当前节点的方法
-        // const selectionCell = graph.getSelectionCell();
-        // console.log(selectionCell === cell); // true
-
         if (cell.vertex) {
           this.selectVertex = cell;
         } else {
           this.selectEdge = cell;
         }
+        console.log(cell);
       },
       _listenEvent() {
+        const that = this
         // 监听自定义事件
         graph.addListener(mxEvent.NORMAL_TYPE_CLICKED, this.showNormalTypeSelect);
         graph.addListener(mxEvent.VERTEX_START_MOVE, this.hideTypeSelect);
@@ -422,6 +498,15 @@
 
         graph.addListener(mxEvent.LABEL_CHANGED, (sender, evt) => {
           vm.$message.info(`内容改变为：${evt.getProperty('value')}`);
+          let id_adm_ci_type = evt.properties.cell.data.element.id_adm_ci_type
+          for (let i in vm.elements) {
+            if (vm.elements[i].id_adm_ci_type === id_adm_ci_type) {
+              // vm.elements[i].name = evt.getProperty('value')
+              // that.selectData.data.name=evt.getProperty('value')
+              that.$refs.MetamodelPanelRef.selectData.element.name = evt.getProperty('value')
+              // that.MetamodelPanelRef
+            }
+          }
         });
 
         graph.addListener(mxEvent.CONNECT_CELL, (sender, evt) => {
@@ -464,16 +549,15 @@
 
       .normal-type-select {
         position: fixed;
+        width: 150px;
       }
     }
 
-    &__right {
+    &__right, &__left {
       position: relative;
-      padding: 20px 0 0 20px;
+      box-sizing: border-box;
+      padding: 20px 20px 0 0;
 
-      .element-panel {
-        margin-top: -9px;
-      }
 
       .elements {
         margin-top: 20px;
@@ -483,9 +567,15 @@
         cursor: pointer;
 
         .element {
-          width: 100px;
+          width: 100%;
           text-align: center;
           margin-bottom: 10px;
+          border: solid 1px #e5e5e5;
+          height: 35px;
+          line-height: 35px;
+          -webkit-border-radius: 2px;
+          -moz-border-radius: 2px;
+          border-radius: 2px;
 
           > img {
             /*border-radius: 2px;*/
@@ -502,12 +592,16 @@
       }
     }
 
+    &__left {
+      padding: 20px 0 0 20px;
+    }
+
     .outline-wrapper {
       border: 1px solid #dedede;
       background: #fff;
       position: fixed;
-      right: 28px;
-      top: 66px;
+      right: 260px;
+      bottom: 20px;
       border-radius: 2px;
       z-index: 10;
 

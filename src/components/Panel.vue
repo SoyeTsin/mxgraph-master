@@ -28,7 +28,7 @@ export default {
       text-align: left;
       color: #333;
       font-size: 16px;
-      border-bottom: 1px solid #e6e6e6;
+      border-bottom: 2px solid #e6e6e6;
     }
   }
 </style>

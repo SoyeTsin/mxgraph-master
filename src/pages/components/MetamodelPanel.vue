@@ -1,42 +1,45 @@
 <template>
-  <div
-    class="edge-panel">
+  <div class="metamodel-panel">
     <Panel
-      title="线">
+      :title="selectData.element.name">
       <el-tabs value="first">
-        <el-tab-pane label="属性" name="first">
+        <el-tab-pane label="信息" name="first">
           <el-form ref="form" :model="form" label-width="70px">
             <el-form-item label="名称">
               <el-input
+                v-model="selectData.element.name"
                 class="edge-width"
                 type="text"
                 @input=""/>
             </el-form-item>
             <el-form-item label="标识">
               <el-input
-                class="edge-color"
+                v-model="selectData.element.id_adm_ci_type"
+                class="edge-width"
                 type="text"
                 @input=""/>
             </el-form-item>
-            <el-form-item label="类型">
+            <el-form-item label="描述">
               <el-input
-                class="edge-color"
+                v-model="selectData.element.description"
+                class="edge-width"
                 type="text"
                 @input=""/>
             </el-form-item>
+
           </el-form>
         </el-tab-pane>
         <el-tab-pane label="样式" name="second">
           <el-form ref="form" :model="form" label-width="70px">
-            <el-form-item label="线条宽度">
+            <el-form-item label="边框大小">
               <el-input
-                :value="width"
+                v-model="vertexStyle.strokeWidth"
                 class="edge-width"
                 min="1"
                 type="number"
-                @input="handleStyleChange('strokeWidth',$event.target.value)"/>
+                @input="handleStyleChange('strokeWidth',vertexStyle.strokeWidth)"/>
             </el-form-item>
-            <el-form-item label="线条样式">
+            <el-form-item label="边框样式">
               <section class="content">
                 <ElPopover
                   popper-class="line-popper"
@@ -62,16 +65,46 @@
                 </ElPopover>
               </section>
             </el-form-item>
-            <el-form-item label="线条颜色">
+            <el-form-item label="字体大小">
               <el-input
-                :value="color"
+                v-model="vertexStyle.fontSize"
+                class="edge-width"
+                min="1"
+                type="number"
+                @input="handleStyleChange('fontSize',vertexStyle.fontSize)"/>
+            </el-form-item>
+            <el-form-item label="字体颜色">
+              <el-input
+                v-model="vertexStyle.fontColor"
                 class="edge-color"
                 type="color"
-                @input="handleStyleChange('strokeColor',$event.target.value)"/>
+                @input="handleStyleChange('fontColor',vertexStyle.fontColor)"/>
+            </el-form-item>
+            <el-form-item label="背景颜色">
+              <el-input
+                v-model="vertexStyle.fillColor"
+                class="edge-color"
+                type="color"
+                @input="handleStyleChange('fillColor',vertexStyle.fillColor)"/>
+            </el-form-item>
+            <el-form-item label="边框颜色">
+              <el-input
+                v-model="vertexStyle.strokeColor"
+                class="edge-color"
+                type="color"
+                @input="handleStyleChange('strokeColor',vertexStyle.strokeColor)"/>
+            </el-form-item>
+            <el-form-item label="背景颜色">
+              <el-input
+                v-model="vertexStyle.fillColor"
+                class="edge-color"
+                type="color"
+                @input="handleStyleChange('fillColor',vertexStyle.fillColor)"/>
             </el-form-item>
           </el-form>
         </el-tab-pane>
       </el-tabs>
+
     </Panel>
   </div>
 </template>
@@ -80,42 +113,66 @@
   import Panel from 'components/Panel';
 
   export default {
-    name: 'EdgePanel',
+    name: "AttributePanel",
     data() {
       return {form: {}}
     },
     props: {
-      width: {
-        type: [String, Number],
+      selectData: {
+        type: Object,
+        required: true,
+      },
+      selectChildren: {
+        type: Array,
+        required: true,
+      },
+      vertexStyle: {
+        type: Object,
         required: true,
       },
       dashed: {
         type: Number,
         default: 0,
       },
-      color: {
-        type: String,
-        required: true,
+      levelType:{
+        type: Number,
+        default: 0,
       },
       handleStyleChange: {
         type: Function,
         required: true,
       },
+      editChildrenContent: {
+        type: Function,
+        required: true,
+      },
     },
-
     computed: {
+      selectVertexStyle() {
+        return this.vertexStyle
+      },
       selectStyleClass() {
         return this.dashed ? 'dashed-line' : 'solid-line';
       },
     },
-
     components: {
       Panel,
+    },
+    methods: {
+      // editContent(item){
+      //   console.log(item)
+      // }
+    },
+    watch: {
+      selectVertexStyle(val, oval) {
+        console.log(val)
+        console.log(oval)
+      }
     },
   }
 </script>
 
-<style lang="less" scoped>
+<style scoped lang="less">
   .content {
     .edge-width {
       padding-left: 2px;
@@ -136,12 +193,10 @@
       height: 40px;
       cursor: pointer;
     }
-
-    .style-select-box:active {
+    .style-select-box:active{
       border: 1px solid #599df8;
     }
   }
-
   .line-popper {
     min-width: 40px;
 
