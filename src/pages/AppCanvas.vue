@@ -2,73 +2,30 @@
   <ElContainer
     class="app-canvas">
 
-    <ElAside
-      class="app-canvas__left"
-      width="234px">
-      <Panel
-        class="element-panel"
-        title="元模型">
-        <section>
-          <ul
-            class="elements">
-            <li
-              class="element"
-              v-for="(element,idx) in elements"
-              :key="idx">
-              <div
-                v-bind="element"
-                class="element-img"
-                :src="`/static/images/ele/${element.icon}`"
-                :alt="element.name">
-                <p>{{ element.name }}</p>
-              </div>
+    <!--    <ElAside-->
+    <!--      class="app-canvas__left"-->
+    <!--      width="234px">-->
+    <!--      <Panel-->
+    <!--        class="element-panel"-->
+    <!--        title="元模型">-->
+    <!--        <div>-->
+    <!--          元模型分类区域-->
+    <!--        </div>-->
+    <!--      </Panel>-->
 
-            </li>
-          </ul>
-        </section>
-      </Panel>
-
-    </ElAside>
+    <!--    </ElAside>-->
     <ElMain
       class="app-canvas__main">
       <div
         class="tool-bar">
-        <input
-          @change="readFile"
-          ref="importInput"
-          class="hide"
-          type="file">
+
         <ElButton
-          type="text"
-          size="mini"
-          @click="importFile">
-          导入
-        </ElButton>
-        <ElButton
-          @click="exportFile"
+          @click=""
           type="text"
           size="mini">
-          导出
+          返回
         </ElButton>
-        <ElButton
-          @click="logXML"
-          type="text"
-          size="mini">
-          输出XML
-        </ElButton>
-        <ElButton
-          type="text"
-          size="mini"
-          @click="del"
-          :disabled="_.isEmpty(selectVertex) && _.isEmpty(selectEdge)">
-          删除
-        </ElButton>
-        <ElButton
-          @click="exportPic"
-          type="text"
-          size="mini">
-          导出图片
-        </ElButton>
+
       </div>
       <div id="graphContainer">
         <!--        <ElSelect-->
@@ -101,13 +58,15 @@
               width="234px">
       <EdgePanel
         v-if="!_.isEmpty(this.selectEdgeStyle)"
-        :width="selectEdgeStyle.strokeWidth"
+        :selectData='selectEdge.data'
+        :selectEdgeStyle="selectEdgeStyle"
         :dashed="selectEdgeStyle.dashed"
         :color="selectEdgeStyle.strokeColor"
         :handleStyleChange="changeEdgeStyle"/>
       <MetamodelPanel
         v-if="!_.isEmpty(this.selectVertexStyle)&&selectVertex.levelType==0"
-        :selectData='selectVertex.data'
+        :selectData='selectVertex.data.Ci'
+        :childIndex='selectVertex.childIndex'
         :levelType='selectVertex.levelType'
         :selectChildren="selectVertex.children"
         :vertex-style='selectVertexStyle'
@@ -127,13 +86,51 @@
         ref="MetamodelPanelRef"
       />
     </el-aside>
-    <div
-      class="outline-wrapper">
-      <h4>导航器</h4>
-      <div
-        id="graphOutline"/>
+    <div class="outline-wrapper">
+      <div class="title">导航器</div>
+      <div id="graphOutline"/>
     </div>
+    <div class="add-node">
+      <section>
+        <ul
+          class="elements">
+          <li class="element">
+            <el-tooltip class="item" effect="dark" content="拖拽新增节点" placement="right">
+              <img
+                v-bind="elements.Ci"
+                class="element-img"
+                :src="`/static/images/normal-type/add_database.png`"
+                :alt="elements.Ci.NameCn"/></el-tooltip>
+          </li>
+        </ul>
+      </section>
+      <div class="icon" @click="createCiFun">
+        <el-tooltip class="item" effect="dark" content="保存" placement="right">
+          <img :src="`/static/images/normal-type/save.png`"/>
+        </el-tooltip>
+      </div>
+      <div class="icon" @click="importFile">
+        <el-tooltip class="item" effect="dark" content="导入" placement="right">
 
+          <img :src="`/static/images/normal-type/import.png`"/></el-tooltip>
+        <input
+          @change="readFile"
+          ref="importInput"
+          class="hide"
+          type="file">
+      </div>
+      <div class="icon" @click="exportFile">
+        <el-tooltip class="item" effect="dark" content="导出" placement="right">
+
+          <img :src="`/static/images/normal-type/export.png`"/></el-tooltip>
+      </div>
+      <div class="icon" @click="del">
+        <el-tooltip class="item" effect="dark" content="删除" placement="right">
+
+          <img :src="`/static/images/normal-type/delete.png`"
+               :class="_.isEmpty(selectVertex) && _.isEmpty(selectEdge)?'hild':''"/></el-tooltip>
+      </div>
+    </div>
   </ElContainer>
 </template>
 
@@ -145,7 +142,7 @@
   import EdgePanel from './components/EdgePanel';
   import MetamodelPanel from './components/MetamodelPanel';
   import ChildMetamodelPanel from './components/ChildMetamodelPanel';
-  import {elements, normalTypeOptions} from '../common/data';
+  import {elements, normalTypeOptions, ciEdge, Attributes} from '../common/data';
 
   const {
     mxGraph,
@@ -168,32 +165,33 @@
 
   const insertVertex = (dom, target, x, y) => {
     // const src = dom.getAttribute('src');
-    const id_adm_ci_type = Number(dom.getAttribute('id_adm_ci_type'));
-    let newGeometry = new mxGeometry(20, 20, 100, 135)
+    const Id = Number(dom.getAttribute('Id'));
+    let newGeometry = new mxGeometry(0, 0, 100, 50)
     const title = dom.getAttribute('alt');
 
     const nodeRootVertex = new mxCell(title, newGeometry, 'verticalAlign=top;overflow=fill;fontSize=12;fontFamily=Helvetica;strokeWidth=1;html=1;');
     // const nodeRootVertex = new mxCell(null, new mxGeometry(0, 0, 100, 135), `node;image=${src}`);
     nodeRootVertex.vertex = true;
+    // 禁用折叠
+    nodeRootVertex.foldingEnabled = false;
+    // 内部cell 跟随 父cell 等比例缩放
+    nodeRootVertex.recursiveResize = true;
 
     // 自定义的业务数据放在 data 属性
     idSeed++;
     // levelType 等级类型 0 父级 1 子级 -1图标
 
     nodeRootVertex.levelType = 0
-    nodeRootVertex.data = {
-      id: idSeed,
-      element: elements.find((element) => element.id_adm_ci_type === id_adm_ci_type),
-      normalType: '',
-    };
+    nodeRootVertex.data = elements;
     const itemVertex = graph.insertVertex(nodeRootVertex, null, null,
-      0, 0, 20, 20,
+      0.42, 0.2, 16, 16,
       'normalType;constituent=1;fillColor=none;image=/static/images/normal-type/add.png',
       true);
     itemVertex.levelType = -1
-
     itemVertex.setConnectable(false);
-    const child = nodeRootVertex.data.element.child
+
+    // const child = nodeRootVertex.data.Attributes
+    const child = []
     insertChild(child, 0, nodeRootVertex, () => {
       const cells = graph.importCells([nodeRootVertex], x, y, target);
       if (cells != null && cells.length > 0) {
@@ -204,8 +202,8 @@
 
   const insertChild = (child, index, nodeRootVertex, cb) => {
     if (index < child.length) {
-      const itemVertex = graph.insertVertex(nodeRootVertex, null, child[index].name,
-        0, 0.15 + 0.15 * index, 100, 20,
+      const itemVertex = graph.insertVertex(nodeRootVertex, null, child[index].Name,
+        0, 0.15 * (index + 1), 100, 20,
         'text;strokeColor=none;fontSize=12;fillColor=none;align=left;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;',
         true);
       itemVertex.setConnectable(false);
@@ -214,7 +212,6 @@
       index++
       insertChild(child, index, nodeRootVertex, cb)
     } else {
-
       cb()
     }
   }
@@ -234,7 +231,9 @@
 
     // drop成功后新建一个节点
     const dropSuccessCb = function (_graph, evt, target, x, y) {
+
       insertVertex(this.element, target, x, y);
+      //添加数据
     };
 
     Array.from(sourceEles).forEach((ele) => {
@@ -278,8 +277,8 @@
   const setConnectValidation = () => {
     // 连接边校验
     mxGraph.prototype.isValidConnection = (source, target) => {
-      const sourceElementId = source.data.element.id;
-      const targetElementId = target.data.element.id;
+      // const sourceElementId = source.data.Ci.Id;
+      // const targetElementId = target.data.Ci.Id;
       // // 如果源点是智爷，终点必须是 皮卡丘 或 我是皮卡丘的超级超级进化
       // if (sourceElementId === 1) {
       //   return targetElementId === 2 || targetElementId === 3;
@@ -319,6 +318,10 @@
         },
         normalTypeOptions,
         elements,
+        Attributes,
+        ciEdge,
+        AttributesArr: [],
+        createCiParameter: {},
         selectEdge: {},
         selectVertex: {},
       };
@@ -359,6 +362,7 @@
         const xml = graph.exportModelXML();
         console.log(xml);
         console.log('mode:', graph.getModel());
+        this.saveCellXML()
       },
       //*******
       // File
@@ -402,9 +406,13 @@
         //更改边缘样式
         graph.setStyle(this.selectVertex, key, value);
       },
-      editChildrenContent(index, value) {
-        //点击子属性名字执行的方法
-        this.$message.info(index + ':' + value.data.name);
+      editChildrenContent(type, value) {
+        //改变子属性名字，更新到图形上
+        this.$message.info(type + ':' + value);
+        let cell = this.selectVertex
+        cell.setValue(value)
+        graph.refresh(this.selectVertex)//重绘
+
       },
       //************
       // NormalType
@@ -423,30 +431,45 @@
         this.normalTypeSelectVisible = false;
       },
       showNormalTypeSelect(sender, evt) {
-        //显示正常类型选择
-        // const normalTypeDom = graph.getDom(evt.getProperty('cell'));
-        // const {left, top} = normalTypeDom.getBoundingClientRect();
-        // this.normalTypePosition.left = `${left + 80}px`;
-        // this.normalTypePosition.top = `${top + 20}px`;
-        // this.normalTypeSelectVisible = true;
+        //添加一个新的子cell
         let index = this.selectVertex.children.length - 1
-        const itemVertex = graph.insertVertex(this.selectVertex, null, elements[0].child[0].name,
+        let Attributes = JSON.parse(JSON.stringify(this.Attributes))
+        const itemVertex = graph.insertVertex(this.selectVertex, null, Attributes.Name,
           0, 0.15 + 0.15 * index, 100, 20,
           'text;strokeColor=none;fontSize=12;fillColor=none;align=left;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;',
           true);
         itemVertex.setConnectable(false);
         itemVertex.levelType = 1
-        itemVertex.data = elements[0].child[0]
+        this.AttributesArr.push(Attributes)
+        itemVertex.data = this.AttributesArr[this.AttributesArr.length - 1]
+        itemVertex.childIndex = index
+        this.updateGeometry()
+      },
+      updateGeometry() {
+        //更新布局和大小 初版
+        let index = this.selectVertex.children.length - 1
         const addVertex = this.selectVertex.children[0];
         let geometry = addVertex.geometry;
         geometry.y += 0.15;
-        setTimeout(()=>{
-          addVertex.setGeometry(geometry)
-        },1000)
+        const total = 50 + index * 20
+        this.selectVertex.geometry.height = total
+        const childrenArr = this.selectVertex.children
+        for (let i in childrenArr) {
+          if (i != 0) {
+            childrenArr[i].geometry.y = (i * 1) * (20 / (total));
+          }
+          if (i == 0) {
+            childrenArr[i].geometry.y = (index * 1 + 1) * (20 / (total - 10));
+          }
+        }
+        graph.refresh(this.selectVertex)//重绘
       },
-
+      /**
+       * 选中cell事件处理@@@@@@
+       * @param selectModel
+       */
       handleSelectionChange(selectModel) {
-        //处理选择更改
+        //处理选择cell更改
 
         this.selectVertex = {};
         this.selectEdge = {};
@@ -458,11 +481,19 @@
 
         if (cell.vertex) {
           this.selectVertex = cell;
+          this.selectData = this.selectVertex.data
+          if (cell.levelType == 0) {
+            this.updateGeometry()
+          }
+
         } else {
           this.selectEdge = cell;
         }
-        console.log(cell);
       },
+      /**
+       * 事件管理
+       * @private
+       */
       _listenEvent() {
         const that = this
         // 监听自定义事件
@@ -479,7 +510,7 @@
           const cell = evt.properties.cells[0];
           const position = Graph.getCellPosition(cell);
           setTimeout(() => {
-            vm.$message.info(`节点被移动到 ${JSON.stringify(position)}`);
+            // vm.$message.info(`节点被移动到 ${JSON.stringify(position)}`);
           }, 1000);
         });
 
@@ -493,17 +524,18 @@
             this.$message.info('添加了一个节点');
           } else if (cell.edge) {
             this.$message.info('添加了一条线');
+            cell.data = ciEdge
           }
         });
 
         graph.addListener(mxEvent.LABEL_CHANGED, (sender, evt) => {
           vm.$message.info(`内容改变为：${evt.getProperty('value')}`);
-          let id_adm_ci_type = evt.properties.cell.data.element.id_adm_ci_type
+          let Id = evt.properties.cell.data.Id
           for (let i in vm.elements) {
-            if (vm.elements[i].id_adm_ci_type === id_adm_ci_type) {
+            if (vm.elements[i].Id === Id) {
               // vm.elements[i].name = evt.getProperty('value')
               // that.selectData.data.name=evt.getProperty('value')
-              that.$refs.MetamodelPanelRef.selectData.element.name = evt.getProperty('value')
+              that.$refs.MetamodelPanelRef.selectData.Ci.NameCn = evt.getProperty('value')
               // that.MetamodelPanelRef
             }
           }
@@ -511,7 +543,92 @@
 
         graph.addListener(mxEvent.CONNECT_CELL, (sender, evt) => {
           vm.$message.info(`改变了连线`);
+
         });
+      },
+      createCiFun() {
+        this.saveModel()
+      },
+      saveCellXML() {
+        //保存XML
+        const xml = graph.exportModelXML();
+        let parameter = {
+          "Content": xml,
+          "Id": 0,
+          "Type": "mata"
+        }
+        this.$post(this.$api.AddXml, parameter).then((response) => {
+          this.$message.info(`XML保存操作已提交`);
+        })
+      },
+      saveModel() {
+        let node = []
+        let line = []
+        //保存所有的元模型
+        const cellArr = graph.model.root.children[0].children
+        for (let i in cellArr) {
+          let cell = cellArr[i]
+          if (cell.vertex && cell.levelType == 0) {
+            node.push(cell)
+          } else {
+            line.push(cell)
+          }
+        }
+        let submitNodeIndex = 0
+        const submitNode = () => {
+          if (submitNodeIndex < node.length) {
+            let parameter = node[submitNodeIndex].data
+            let nodeChildren = node[submitNodeIndex].children
+            for (let i in nodeChildren) {
+              if (nodeChildren[i].levelType == 1) {
+                parameter.Attributes.push(nodeChildren[i].data)
+              }
+            }
+            this.$post(this.$api.CreateCi, parameter).then((response) => {
+
+              if (response.ErrorCode == 0) {
+                node[submitNodeIndex].data.Ci.Id = response.Data.Ci.Id
+                submitNodeIndex++
+                submitNode()
+              } else {
+                this.$message.error(response.ErrorMsg);
+              }
+            })
+          } else {
+            this.$message.info(`全部node保存操作已提交`);
+            this.saveContact(line)
+          }
+        }
+        submitNode()
+      },
+      saveContact(edge) {
+        //保存所有的连线关系
+        console.log(edge)
+        let lineArr = []
+        for (let i in edge) {
+          edge[i].data.SrcCiTypeId = edge[i].source.data.Ci.Id
+          edge[i].data.TarCiTypeId = edge[i].target.data.Ci.Id
+          lineArr.push(edge[i].data)
+        }
+        let submitNodeIndex = 0
+        const submitNode = () => {
+          if (submitNodeIndex < lineArr.length) {
+
+            this.$post(this.$api.AddCiTypeRef, lineArr[submitNodeIndex]).then((response) => {
+              if (response.ErrorCode == 0) {
+                edge[submitNodeIndex].data.Id = response.Data.Id
+                submitNodeIndex++
+                submitNode()
+              } else {
+                this.$message.error(response.ErrorMsg);
+              }
+            })
+          } else {
+            this.$message.info(`连线保存操作已提交`);
+            this.saveCellXML()
+          }
+        }
+        submitNode()
       }
     },
 
@@ -599,26 +716,64 @@
     .outline-wrapper {
       border: 1px solid #dedede;
       background: #fff;
-      position: fixed;
-      right: 260px;
-      bottom: 20px;
+      position: absolute;
+      left: 28px;
+      bottom: 22px;
       border-radius: 2px;
       z-index: 10;
 
-      > h4 {
-        padding: 6px;
+      > .title {
+        height: 20px;
+        line-height: 20px;
+        box-sizing: border-box;
+        padding: 0 4px;
         font-size: 12px;
         border-bottom: 1px solid #e6e6e6;
       }
 
       #graphOutline {
-        width: 200px;
+        width: 140px;
+        height: 80px;
+      }
+    }
+
+    .add-node {
+      border: 1px solid #dedede;
+      background: #fff;
+      position: absolute;
+      left: 28px;
+      top: 65px;
+      border-radius: 2px;
+      z-index: 10;
+      width: 36px;
+
+      img {
+        width: 36px;
+        height: 36px;
+        cursor: crosshair;
+      }
+
+      .icon {
+        box-sizing: border-box;
+        padding: 4px;
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+
+        > img {
+          width: 100%;
+          height: 100%;
+          cursor: pointer;
+        }
+
+        .hild {
+          opacity: 0.3;
+          cursor: default;
+        }
       }
     }
   }
-</style>
 
-<style lang="less">
   .normal-type-item {
     display: flex;
     align-items: center;

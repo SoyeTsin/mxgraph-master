@@ -1,43 +1,38 @@
 <template>
   <div class="metamodel-panel">
     <Panel
-      :title="selectData.element.name">
+      title="设置">
       <el-tabs value="first">
         <el-tab-pane label="信息" name="first">
-          <el-form ref="form" :model="form" label-width="70px">
-            <el-form-item label="名称">
+          <el-form :model="selectData" :rules="rules" ref="selectData" label-width="70px">
+            <el-form-item label="名称" prop="NameCn">
               <el-input
-                v-model="selectData.element.name"
+                v-model="selectData.NameCn"
+                class="edge-width"
+                type="text"
+                @input="editChildrenContent('NameCn',selectData.NameCn)"/>
+            </el-form-item>
+            <el-form-item label="标识" prop="Name">
+              <el-input
+                v-model="selectData.Name"
                 class="edge-width"
                 type="text"
                 @input=""/>
             </el-form-item>
-            <el-form-item label="标识">
+            <el-form-item label="描述" prop="description">
               <el-input
-                v-model="selectData.element.id_adm_ci_type"
+                v-model="selectData.description"
                 class="edge-width"
                 type="text"
                 @input=""/>
             </el-form-item>
-            <el-form-item label="描述">
-              <el-input
-                v-model="selectData.element.description"
-                class="edge-width"
-                type="text"
-                @input=""/>
-            </el-form-item>
-
           </el-form>
         </el-tab-pane>
         <el-tab-pane label="样式" name="second">
-          <el-form ref="form" :model="form" label-width="70px">
+          <el-form ref="form"  label-width="70px">
             <el-form-item label="边框大小">
-              <el-input
-                v-model="vertexStyle.strokeWidth"
-                class="edge-width"
-                min="1"
-                type="number"
-                @input="handleStyleChange('strokeWidth',vertexStyle.strokeWidth)"/>
+              <el-input-number v-model="vertexStyle.strokeWidth" size="mini" :min="1" :max="100" label="边框大小"
+                               @input="handleStyleChange('strokeWidth',vertexStyle.strokeWidth)"></el-input-number>
             </el-form-item>
             <el-form-item label="边框样式">
               <section class="content">
@@ -66,40 +61,24 @@
               </section>
             </el-form-item>
             <el-form-item label="字体大小">
-              <el-input
-                v-model="vertexStyle.fontSize"
-                class="edge-width"
-                min="1"
-                type="number"
-                @input="handleStyleChange('fontSize',vertexStyle.fontSize)"/>
+              <el-input-number v-model="vertexStyle.fontSize" size="mini" :min="12" :max="36" label="字体大小"
+                               @input="handleStyleChange('fontSize',vertexStyle.fontSize)"></el-input-number>
             </el-form-item>
             <el-form-item label="字体颜色">
-              <el-input
-                v-model="vertexStyle.fontColor"
-                class="edge-color"
-                type="color"
-                @input="handleStyleChange('fontColor',vertexStyle.fontColor)"/>
+              <el-color-picker v-model="vertexStyle.fontColor" show-alpha
+                               @input="handleStyleChange('fontColor',vertexStyle.fontColor)"></el-color-picker>
             </el-form-item>
             <el-form-item label="背景颜色">
-              <el-input
-                v-model="vertexStyle.fillColor"
-                class="edge-color"
-                type="color"
-                @input="handleStyleChange('fillColor',vertexStyle.fillColor)"/>
+              <el-color-picker v-model="vertexStyle.fillColor" show-alpha
+                               @input="handleStyleChange('fillColor',vertexStyle.fillColor)"></el-color-picker>
             </el-form-item>
             <el-form-item label="边框颜色">
-              <el-input
-                v-model="vertexStyle.strokeColor"
-                class="edge-color"
-                type="color"
-                @input="handleStyleChange('strokeColor',vertexStyle.strokeColor)"/>
+              <el-color-picker v-model="vertexStyle.strokeColor" show-alpha
+                               @input="handleStyleChange('strokeColor',vertexStyle.strokeColor)"></el-color-picker>
             </el-form-item>
             <el-form-item label="背景颜色">
-              <el-input
-                v-model="vertexStyle.fillColor"
-                class="edge-color"
-                type="color"
-                @input="handleStyleChange('fillColor',vertexStyle.fillColor)"/>
+              <el-color-picker v-model="vertexStyle.fillColor" show-alpha
+                               @input="handleStyleChange('fillColor',vertexStyle.fillColor)"></el-color-picker>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -115,7 +94,24 @@
   export default {
     name: "AttributePanel",
     data() {
-      return {form: {}}
+      return {
+        dialogFormVisible: false,
+        formLabelWidth: '120px',
+        rules: {
+          NameCn: [
+            {required: true, message: '请输入名称', trigger: 'blur'},
+            {min: 1, max: 25, message: '长度在 1 到 25 个字符', trigger: 'blur'}
+          ],
+          Name: [
+            {required: true, message: '请输入标识', trigger: 'blur'},
+            {min: 1, max: 25, message: '长度在 1 到 25 个字符', trigger: 'blur'}
+          ],
+          description: [
+            {required: false, message: '请输入描述', trigger: 'blur'},
+            {min: 1, max: 100, message: '长度在 3 到 5 个字符', trigger: 'blur'}
+          ],
+        }
+      }
     },
     props: {
       selectData: {
@@ -134,7 +130,7 @@
         type: Number,
         default: 0,
       },
-      levelType:{
+      levelType: {
         type: Number,
         default: 0,
       },
@@ -154,9 +150,14 @@
       selectStyleClass() {
         return this.dashed ? 'dashed-line' : 'solid-line';
       },
+      bsName() {
+        return this.selectData.Name
+      }
     },
     components: {
       Panel,
+    },
+    mounted() {
     },
     methods: {
       // editContent(item){
@@ -167,6 +168,9 @@
       selectVertexStyle(val, oval) {
         console.log(val)
         console.log(oval)
+      },
+      bsName(val, oval) {
+        this.selectData.InstanceTableName = val
       }
     },
   }
@@ -190,13 +194,17 @@
       border-radius: 4px;
       box-sizing: border-box;
       padding: 8px;
-      height: 40px;
+      height: 28px;
+      width: 130px;
+      margin-top: 6px;
       cursor: pointer;
     }
-    .style-select-box:active{
+
+    .style-select-box:active {
       border: 1px solid #599df8;
     }
   }
+
   .line-popper {
     min-width: 40px;
 

@@ -1,151 +1,52 @@
-export const elements = [{
-  id_adm_ci_type: 0,
-  child: [{
-    name: '模型1-child-1',
-    id_adm_ci_type_attr: 1,
-    id_adm_ci_typ: '',
-    input_type: '',//输入类型
-    column_name: '',
-    column_type: '',
-    search_seq_no: '',
-    display_type: '',
-    display_seq_no: '',
-    length: '',
-    is_only: '',
-    is_null: '0',
-    is_hiden: '',
-    is_editable: '',
-    is_deleted: '',
-    reference_id: '0',
-    reference_ci_type_id: '',//0为正常使用,1为被修改,2为新增
-  }, {
-    name: '模型1-child-2',
-    id_adm_ci_type_attr: 2,
-    id_adm_ci_typ: '',
-    input_type: '',//输入类型
-    column_name: '',
-    column_type: '',
-    search_seq_no: '',
-    display_type: '',
-    display_seq_no: '',
-    length: '128',
-    is_only: '1',
-    is_null: '1',
-    is_hiden: '',
-    is_editable: '',
-    is_deleted: '',
-    reference_id: '',
-    reference_ci_type_id: '',//0为正常使用,1为被修改,2为新增
-  }],
-  name: '模型1',
-  description: '这个是元模型1',
-  id_adm_tenement: '',
-  instance_table_name: '',
-  table_status: '',
-  ci_type: '',
-  ci_guid: '',
-  ci_view_id: '',
-  is_reference: '',
-  reference_ci_id: '',
-}, {
-  id_adm_ci_type: 1,
-  child: [{
-    name: '模型2-child-1',
-    id_adm_ci_type_attr: 3,
-    id_adm_ci_typ: '',
-    input_type: '',//输入类型
-    column_name: '',
-    column_type: '',
-    search_seq_no: '',
-    display_type: '',
-    display_seq_no: '',
-    length: '',
-    is_only: '',
-    is_null: '',
-    is_hiden: '',
-    is_editable: '',
-    is_deleted: '',
-    reference_id: '',
-    reference_ci_type_id: '',//0为正常使用,1为被修改,2为新增
-  }, {
-    name: '模型2-child-2',
-    id_adm_ci_type_attr: 4,
-    id_adm_ci_typ: '',
-    input_type: '',//输入类型
-    column_name: '',
-    column_type: '',
-    search_seq_no: '',
-    display_type: '',
-    display_seq_no: '',
-    length: '',
-    is_only: '',
-    is_null: '',
-    is_hiden: '',
-    is_editable: '',
-    is_deleted: '',
-    reference_id: '',
-    reference_ci_type_id: '',//0为正常使用,1为被修改,2为新增
-  }],
-  name: '模型2',
-  description: '这个是元模型2',
-  id_adm_tenement: '',
-  instance_table_name: '',
-  table_status: '',
-  ci_type: '',
-  ci_guid: '',
-  ci_view_id: '',
-  is_reference: '',
-  reference_ci_id: '',
-}, {
-  id_adm_ci_type: 2,
-  child: [{
-    name: '模型3-child-1',
-    id_adm_ci_type_attr: 5,
-    id_adm_ci_typ: '',
-    input_type: '',//输入类型
-    column_name: '',
-    column_type: '',
-    search_seq_no: '',
-    display_type: '',
-    display_seq_no: '',
-    length: '128',
-    is_only: '',
-    is_null: '',
-    is_hiden: '',
-    is_editable: '',
-    is_deleted: '',
-    reference_id: '',
-    reference_ci_type_id: '',//0为正常使用,1为被修改,2为新增
-  }, {
-    name: '模型3-child-2',
-    id_adm_ci_type_attr: 6,
-    id_adm_ci_typ: '',
-    input_type: '',//输入类型
-    column_name: '',
-    column_type: '',
-    search_seq_no: '',
-    display_type: '',
-    display_seq_no: '',
-    length: '128',
-    is_only: '',
-    is_null: '1',
-    is_hiden: '',
-    is_editable: '',
-    is_deleted: '',
-    reference_id: '',
-    reference_ci_type_id: '',//0为正常使用,1为被修改,2为新增
-  }],
-  name: '模型3',
-  description: '这个是元模型3',
-  id_adm_tenement: '',
-  instance_table_name: '',
-  table_status: '',
-  ci_type: '',
-  ci_guid: '',
-  ci_view_id: '',
-  is_reference: '',
-  reference_ci_id: '',
-},];
+export const elements ={ //节点
+  "Attributes": [],
+  "Ci": {
+    "CiGuid": 0,
+    "CiType": 0,
+    "CiViewId": 0,
+    "Description": "",
+    "Id": 0,
+    NameCn:'自定义节点',
+    "IdAdmTenement": 0,
+    "InstanceTableName": "",
+    "IsReference": 0,
+    "Name": "",
+    "ReferenceCiId": 0,
+    "TableStatus": "0"
+  }
+};
+
+export const Attributes = { //属性
+  "ColumnName": "",
+  "ColumnType": "varchar",
+  "Description": "",
+  "DisplaySeqNo": 0,
+  "DisplayType": "Input",
+  "Id": 0,
+  "IdAdmCiType": 0,
+  "InputType": "0",
+  "IsDeleted": "0",
+  "IsEditable": "0",
+  "IsHiden": "0",
+  "IsNull": "0",
+  "IsOnly": "0",
+  "Length": 128,
+  "Name": "自定义属性",
+  "ReferenceCiTypeId": 0,
+  "ReferenceId": 0,
+  "SearchSeqNo": 0,
+  "Status": 0
+}
+
+export const ciEdge = { //线条
+  "CiViewId": 0,
+  "Id": 0,
+  "Name": "",
+  "ReferenceType": "",
+  "SrcCiTypeId": 0,
+  "TarCiTypeId": 0,
+  "Title": "自定义线条"
+};
 
 export const normalTypeOptions = [{
   label: '自定义',
@@ -154,3 +55,72 @@ export const normalTypeOptions = [{
   label: '引用',
   icon: 'fire.png',
 },];
+
+export const ColumnType = [{
+  value: 'varchar',
+  label: '字符串'
+},{
+  value: 'int',
+  label: '整型'
+},{
+  value: 'boolean',
+  label: '布尔类型'
+},{
+  value: 'float',
+  label: '浮点型'
+},{
+  value: 'array',
+  label: '数组'
+},{
+  value: 'date',
+  label: '时间'
+},{
+  value: 'reference',
+  label: '引用'
+}]
+
+export const DisplayType = [{
+  value: 'Radio',
+  label: '单选框'
+},{
+  value: 'Checkbox',
+  label: '多选框'
+},{
+  value: 'Input',
+  label: '输入框'
+},{
+  value: 'InputNumber',
+  label: '计数器'
+},{
+  value: 'Select',
+  label: '选择器'
+},{
+  value: 'Cascader',
+  label: '级联选择器'
+},{
+  value: 'Switch',
+  label: '开关'
+},{
+  value: 'Slider',
+  label: '滑块'
+},{
+  value: 'TimePicker',
+  label: '时间选择器'
+},{
+  value: 'DatePicker',
+  label: '日期选择器'
+},{
+  value: 'DateTimePicker',
+  label: '日期时间选择器'
+},{
+  value: 'Upload',
+  label: '上传'
+},{
+  value: 'ColorPicker',
+  label: '颜色选择器'
+},{
+  value: 'Transfer',
+  label: '穿梭框'
+}]
+
+

@@ -5,21 +5,24 @@
       title="线">
       <el-tabs value="first">
         <el-tab-pane label="属性" name="first">
-          <el-form ref="form" :model="form" label-width="70px">
-            <el-form-item label="名称">
+          <el-form :model="selectData" :rules="rules" ref="selectData" label-width="70px">
+            <el-form-item label="名称" prop="Title">
               <el-input
+                v-model="selectData.Title"
                 class="edge-width"
                 type="text"
                 @input=""/>
             </el-form-item>
-            <el-form-item label="标识">
+            <el-form-item label="标识" prop="Name">
               <el-input
+                v-model="selectData.Name"
                 class="edge-color"
                 type="text"
                 @input=""/>
             </el-form-item>
-            <el-form-item label="类型">
+            <el-form-item label="类型" prop="ReferenceType">
               <el-input
+                v-model="selectData.ReferenceType"
                 class="edge-color"
                 type="text"
                 @input=""/>
@@ -29,12 +32,8 @@
         <el-tab-pane label="样式" name="second">
           <el-form ref="form" :model="form" label-width="70px">
             <el-form-item label="线条宽度">
-              <el-input
-                :value="width"
-                class="edge-width"
-                min="1"
-                type="number"
-                @input="handleStyleChange('strokeWidth',$event.target.value)"/>
+              <el-input-number v-model="selectEdgeStyle.strokeWidth" size="mini" :min="1" :max="36" label="线条宽度"
+                               @input="handleStyleChange('strokeWidth',selectEdgeStyle.strokeWidth)"></el-input-number>
             </el-form-item>
             <el-form-item label="线条样式">
               <section class="content">
@@ -63,11 +62,8 @@
               </section>
             </el-form-item>
             <el-form-item label="线条颜色">
-              <el-input
-                :value="color"
-                class="edge-color"
-                type="color"
-                @input="handleStyleChange('strokeColor',$event.target.value)"/>
+              <el-color-picker v-model="color" show-alpha
+                               @input="handleStyleChange('strokeColor',color)"></el-color-picker>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -82,11 +78,31 @@
   export default {
     name: 'EdgePanel',
     data() {
-      return {form: {}}
+      return {
+        form: {},
+        rules: {
+          Title: [
+            {required: true, message: '请输入名称', trigger: 'blur'},
+            {min: 1, max: 25, message: '长度在 1 到 25 个字符', trigger: 'blur'}
+          ],
+          Name: [
+            {required: true, message: '请输入标识', trigger: 'blur'},
+            {min: 1, max: 25, message: '长度在 1 到 25 个字符', trigger: 'blur'}
+          ],
+          ReferenceType: [
+            {required: false, message: '请选择类型', trigger: 'blur'},
+            {min: 1, max: 100, message: '长度在 3 到 5 个字符', trigger: 'blur'}
+          ],
+        }
+      }
     },
     props: {
-      width: {
-        type: [String, Number],
+      selectData: {
+        type: Object,
+        required: true,
+      },
+      selectEdgeStyle: {
+        type: Object,
         required: true,
       },
       dashed: {
@@ -133,7 +149,9 @@
       border-radius: 4px;
       box-sizing: border-box;
       padding: 8px;
-      height: 40px;
+      height: 28px;
+      width: 130px;
+      margin-top: 6px;
       cursor: pointer;
     }
 
